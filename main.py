@@ -15,7 +15,7 @@ class Population:
         self.population_size = population_size
         self.target = target
 
-    def generate_population(self, gene_size):
+    def generate_population_with_gene_size(self, gene_size):
         for x in range(self.population_size):
             gene = random.sample(range(self.target), gene_size)
             fitness = get_fitness(gene, self.target)
@@ -69,10 +69,10 @@ st.header('Solving equation with genetic algorithm')
 pop_size = int(st.number_input('Insert Population Size'))
 target_number = int(st.number_input('Insert The Target Number'))
 p = Population(pop_size, target_number)
-p.generate_population(4)
 max_iterations = int(st.number_input('Insert The Maximum Allowed Iterations'))
 top_chromosome = None
 if st.button('Run'):
+    p.generate_population_with_gene_size(4)
     for i in range(max_iterations):
         p.breed_population(10)
         df = pd.DataFrame(
