@@ -21,6 +21,7 @@ class Population:
         self.population_size = population_size
         self.target = target
         self.gene_size = gene_size
+        self.top_population_fitness = []
 
     def generate_population(self):
         for x in range(self.population_size):
@@ -32,12 +33,16 @@ class Population:
     def breed_population(self, survival_rate, mutate):
         self.chromosomes.sort(key=lambda c: c.fitness)
         self.chromosomes = self.chromosomes[:survival_rate]
+        generated_children = []
+        self.top_population_fitness.append([c.fitness for c in self.chromosomes])
 
-        while len(self.chromosomes) < self.population_size:
+        while len(generated_children) < self.population_size - survival_rate:
             parent_1 = random.choice(self.chromosomes)
             parent_2 = random.choice(self.chromosomes)
             child = self.breed_parents(parent_1, parent_2, mutate)
-            self.chromosomes.append(child)
+            generated_children.append(child)
+
+        self.chromosomes.extend(generated_children)
 
     def breed_parents(self, parent_1, parent_2, mutate):
         child_gene = []
@@ -52,12 +57,12 @@ class Population:
 
 
 def get_fitness(gene, target):
-    total = 0
+    fitness = 0
     var = 1
     for g in gene:
-        total += var * g
+        fitness += var * g
         var += 1
-    diff = abs(target - total) / 1
+    diff = abs(target - fitness) / 1
     return diff
 
 
@@ -73,35 +78,47 @@ def get_result(gene):
     return res.rstrip(res[-1]), sum
 
 
-st.header('Solving equation with genetic algorithm')
-pop_size = int(st.number_input('Insert Population Size'))
-target_number = int(st.number_input('Insert The Target Number'))
-max_iterations = int(st.number_input('Insert The Maximum Allowed Iterations'))
-chromosome_gene_size = int(st.number_input('Insert gene size'))
-allow_mutation = st.checkbox('Allow Mutation')
-top_chromosome = None
-p = Population(pop_size, chromosome_gene_size, target_number)
-if st.button('Run'):
-    p.generate_population()
-    fitness_per_population = []
-    generation = []
-    total_number_of_iterations = 1
-    for i in range(max_iterations + 1):
-        total_number_of_iterations = i
-        p.breed_population(10, allow_mutation)
-        fitness_per_population.append([c.fitness for c in p.chromosomes])
-        generation.append(i)
-        top_chromosome = p.chromosomes[0]
-        if top_chromosome.fitness == 0:
-            break
+def start():
+    st.header('Solving equation with genetic algorithm')
+    st.subheader('Example: Target = 30, Generated Variables = 4   1a+2b+3c+4d=30')
+    pop_size = int(st.number_input('Enter The Population Size'))
+    max_iterations = int(st.number_input('Enter The Maximum Allowed Iterations'))
+    chromosome_gene_size = int(st.number_input('Enter The Number Of Generated Variables For The Equation'))
+    rate_of_survival = int(st.number_input('Enter The Number Of Survivals Per Population'))
+    target_number = int(st.number_input('Enter The Target Number For The Equation'))
+    allow_mutation = st.checkbox('Allow Mutation')
+    top_chromosome = None
+    p = Population(pop_size, chromosome_gene_size, target_number)
+    if st.button('Run'):
+        p.generate_population()
+        fitness_per_population = []
+        generation = []
+        total_number_of_iterations = 1
+        for i in range(max_iterations + 1):
+            total_number_of_iterations = i
+            p.breed_population(rate_of_survival, allow_mutation)
+            fitness_per_population.append([c.fitness for c in p.chromosomes])
+            generation.append('iteration {index}'.format(index=i))
+            top_chromosome = p.chromosomes[0]
+            if top_chromosome.fitness == 0:
+                st.snow()
+                break
 
-    st.subheader('Chart of Fitness Over Generations')
-    df = pd.DataFrame(
-        fitness_per_population, generation)
-    st.line_chart(df)
+        st.subheader('Fitness Over Generations')
+        df = pd.DataFrame(
+            fitness_per_population, generation)
+        st.line_chart(df)
 
-    expression, total = get_result(top_chromosome.gene)
-    st.write('Result After {iter} Iterations'.format(iter=total_number_of_iterations))
-    st.latex(r'''
-        {expr} = {res}
-        '''.format(expr=expression, res=total))
+        st.subheader('Fitness For Top Chromosomes Over Generations')
+        top_fitness = pd.DataFrame(
+            p.top_population_fitness, generation)
+        st.line_chart(top_fitness)
+
+        expression, total = get_result(top_chromosome.gene)
+        st.write('Result After {iter} Iterations'.format(iter=total_number_of_iterations))
+        st.latex(r'''
+            {expr} = {res}
+            '''.format(expr=expression, res=total))
+
+
+start()
