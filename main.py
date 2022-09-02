@@ -72,17 +72,18 @@ p = Population(pop_size, target_number)
 p.generate_population(4)
 max_iterations = int(st.number_input('Insert The Maximum Allowed Iterations'))
 top_chromosome = None
-for i in range(max_iterations):
-    p.breed_population(10)
-    df = pd.DataFrame(
-        [c.fitness for c in p.chromosomes])
-    st.line_chart(df)
-    top_chromosome = p.chromosomes[0]
-    if top_chromosome.fitness == 0:
-        break
+if st.button('Run'):
+    for i in range(max_iterations):
+        p.breed_population(10)
+        df = pd.DataFrame(
+            [c.fitness for c in p.chromosomes])
+        st.line_chart(df)
+        top_chromosome = p.chromosomes[0]
+        if top_chromosome.fitness == 0:
+            break
 
-expression, total = get_result(top_chromosome.gene)
-st.latex(r'''
-    {expr} = {res}
-    '''.format(expr=expression, res=total))
-st.write(top_chromosome.fitness, top_chromosome.gene)
+    expression, total = get_result(top_chromosome.gene)
+    st.latex(r'''
+        {expr} = {res}
+        '''.format(expr=expression, res=total))
+    st.write(top_chromosome.fitness, top_chromosome.gene)
