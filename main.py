@@ -9,37 +9,45 @@ class Chromosome:
         self.fitness = fitness
 
 
+def get_child_gene(index, parent, gene, mutate):
+    if mutate and random.uniform(0, 1) > .5:
+        return gene[index]
+    return parent[index]
+
+
 class Population:
-    def __init__(self, population_size, target):
+    def __init__(self, population_size, gene_size, target):
         self.chromosomes = []
         self.population_size = population_size
         self.target = target
+        self.gene_size = gene_size
 
-    def generate_population_with_gene_size(self, gene_size):
+    def generate_population(self):
         for x in range(self.population_size):
-            gene = random.sample(range(self.target), gene_size)
+            gene = random.sample(range(self.target), self.gene_size)
             fitness = get_fitness(gene, self.target)
             chromosome = Chromosome(gene, fitness)
             self.chromosomes.append(chromosome)
 
-    def breed_population(self, survival_rate):
+    def breed_population(self, survival_rate, mutate):
         self.chromosomes.sort(key=lambda c: c.fitness)
         self.chromosomes = self.chromosomes[:survival_rate]
 
         while len(self.chromosomes) < self.population_size:
             parent_1 = random.choice(self.chromosomes)
             parent_2 = random.choice(self.chromosomes)
-            child = self.breed_parents(parent_1, parent_2)
+            child = self.breed_parents(parent_1, parent_2, mutate)
             self.chromosomes.append(child)
 
-    def breed_parents(self, parent_1, parent_2):
+    def breed_parents(self, parent_1, parent_2, mutate):
         child_gene = []
+        gene = random.sample(range(self.target), self.gene_size)
         for i in range(len(parent_1.gene)):
             flip = random.uniform(0, 1)
             if flip > .5:
-                child_gene.append(parent_1.gene[i])
+                child_gene.append(get_child_gene(i, parent_1.gene, gene, mutate))
             else:
-                child_gene.append(parent_2.gene[i])
+                child_gene.append(get_child_gene(i, parent_2.gene, gene, mutate))
         return Chromosome(child_gene, get_fitness(child_gene, self.target))
 
 
@@ -68,18 +76,19 @@ def get_result(gene):
 st.header('Solving equation with genetic algorithm')
 pop_size = int(st.number_input('Insert Population Size'))
 target_number = int(st.number_input('Insert The Target Number'))
-p = Population(pop_size, target_number)
 max_iterations = int(st.number_input('Insert The Maximum Allowed Iterations'))
-gene_size = int(st.number_input('Insert gene size'))
+chromosome_gene_size = int(st.number_input('Insert gene size'))
+allow_mutation = st.checkbox('Allow Mutation')
 top_chromosome = None
+p = Population(pop_size, chromosome_gene_size, target_number)
 if st.button('Run'):
-    p.generate_population_with_gene_size(gene_size)
+    p.generate_population()
     fitness_per_population = []
     generation = []
     total_number_of_iterations = 1
     for i in range(max_iterations + 1):
         total_number_of_iterations = i
-        p.breed_population(10)
+        p.breed_population(10, allow_mutation)
         fitness_per_population.append([c.fitness for c in p.chromosomes])
         generation.append(i)
         top_chromosome = p.chromosomes[0]
