@@ -76,7 +76,9 @@ if st.button('Run'):
     p.generate_population_with_gene_size(gene_size)
     fitness_per_population = []
     generation = []
-    for i in range(max_iterations):
+    total_number_of_iterations = 1
+    for i in range(max_iterations + 1):
+        total_number_of_iterations = i
         p.breed_population(10)
         fitness_per_population.append([c.fitness for c in p.chromosomes])
         generation.append(i)
@@ -90,6 +92,7 @@ if st.button('Run'):
     st.line_chart(df)
 
     expression, total = get_result(top_chromosome.gene)
+    st.write('Result After {iter} Iterations'.format(iter=total_number_of_iterations))
     st.latex(r'''
         {expr} = {res}
         '''.format(expr=expression, res=total))
