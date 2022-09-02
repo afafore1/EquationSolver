@@ -31,9 +31,16 @@ class Population:
             chromosome = Chromosome(gene, fitness)
             self.chromosomes.append(chromosome)
 
-    def breed_population(self, survival_rate, mutate):
+    def breed_population(self, survival_rate, mutate, allow_mixes):
         self.chromosomes.sort(key=lambda c: c.fitness)
+        non_survivors = self.chromosomes[survival_rate:]
         self.chromosomes = self.chromosomes[:survival_rate]
+        if allow_mixes:
+            for i in range(int(survival_rate/3)):
+                if random.uniform(0, 1) > .5:
+                    index = int(random.uniform(0, len(self.chromosomes)))
+                    self.chromosomes[index] = non_survivors[index]
+
         generated_children = []
         self.top_population_fitness.append([c.fitness for c in self.chromosomes])
 
@@ -89,6 +96,7 @@ def start():
     rate_of_survival = int(st.number_input('Enter The Number Of Survivals Per Population'))
     target_number = st.number_input('Enter The Target Number For The Equation')
     allow_mutation = st.checkbox('Allow Mutation')
+    allow_mixes_in_top_chromosomes = st.checkbox('Allow Dilution Of Top Chromosomes')
     top_chromosome = None
     p = Population(pop_size, chromosome_gene_size, target_number)
     if st.button('Run'):
@@ -98,7 +106,7 @@ def start():
         total_number_of_iterations = 1
         for i in range(max_iterations + 1):
             total_number_of_iterations = i
-            p.breed_population(rate_of_survival, allow_mutation)
+            p.breed_population(rate_of_survival, allow_mutation, allow_mixes_in_top_chromosomes)
             fitness_per_population.append([c.fitness for c in p.chromosomes])
             generation.append('iteration {index}'.format(index=i))
             top_chromosome = p.chromosomes[0]
