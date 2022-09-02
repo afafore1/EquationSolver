@@ -1,6 +1,7 @@
 import random
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 
 class Chromosome:
@@ -25,7 +26,7 @@ class Population:
 
     def generate_population(self):
         for x in range(self.population_size):
-            gene = random.sample(range(self.target), self.gene_size)
+            gene = np.random.uniform(low=0.0, high=self.target, size=(self.gene_size,)).round(2)
             fitness = get_fitness(gene, self.target)
             chromosome = Chromosome(gene, fitness)
             self.chromosomes.append(chromosome)
@@ -46,7 +47,7 @@ class Population:
 
     def breed_parents(self, parent_1, parent_2, mutate):
         child_gene = []
-        gene = random.sample(range(self.target), self.gene_size)
+        gene = np.random.uniform(low=0.0, high=self.target, size=(self.gene_size,)).round(2)
         for i in range(len(parent_1.gene)):
             flip = random.uniform(0, 1)
             if flip > .5:
@@ -63,6 +64,7 @@ def get_fitness(gene, target):
         fitness += var * g
         var += 1
     diff = abs(target - fitness) / 1
+    diff = round(diff, 2)
     return diff
 
 
@@ -85,7 +87,7 @@ def start():
     max_iterations = int(st.number_input('Enter The Maximum Allowed Iterations'))
     chromosome_gene_size = int(st.number_input('Enter The Number Of Generated Variables For The Equation'))
     rate_of_survival = int(st.number_input('Enter The Number Of Survivals Per Population'))
-    target_number = int(st.number_input('Enter The Target Number For The Equation'))
+    target_number = st.number_input('Enter The Target Number For The Equation')
     allow_mutation = st.checkbox('Allow Mutation')
     top_chromosome = None
     p = Population(pop_size, chromosome_gene_size, target_number)
