@@ -46,24 +46,24 @@ class Population:
 def get_fitness(gene, target):
     total = 0
     var = 1
-    for i in gene:
-        total += var * i
+    for g in gene:
+        total += var * g
         var += 1
     diff = abs(target - total) / 1
     return diff
 
 
-if __name__ == '__main__':
-    p = Population(100, 30)
-    p.generate_population(4)
-    max_iterations = 100
+def get_result(gene):
+    res = ''
+    var = 1
+    total = 0
+    for g in gene:
+        res += '{x}*{num}+'.format(x=var, num=g)
+        total += var * g
+        var += 1
 
-    for i in range(max_iterations):
-        p.breed_population(10)
-        top_chromosome = p.chromosomes[0]
-        if top_chromosome.fitness == 0:
-            print(top_chromosome.fitness, top_chromosome.gene)
-            break
+    return res.rstrip(res[-1]), total
+
 
 st.header('Solving equation with genetic algorithm')
 pop_size = int(st.number_input('Insert Population Size'))
@@ -71,6 +71,7 @@ target_number = int(st.number_input('Insert The Target Number'))
 p = Population(pop_size, target_number)
 p.generate_population(4)
 max_iterations = int(st.number_input('Insert The Maximum Allowed Iterations'))
+top_chromosome = None
 for i in range(max_iterations):
     p.breed_population(10)
     df = pd.DataFrame(
@@ -78,5 +79,10 @@ for i in range(max_iterations):
     st.line_chart(df)
     top_chromosome = p.chromosomes[0]
     if top_chromosome.fitness == 0:
-        print(top_chromosome.fitness, top_chromosome.gene)
         break
+
+expression, total = get_result(top_chromosome.gene)
+st.latex(r'''
+    {expr} = {res}
+    '''.format(expr=expression, res=total))
+st.write(top_chromosome.fitness, top_chromosome.gene)
