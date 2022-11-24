@@ -90,11 +90,11 @@ def get_result(gene):
 def start():
     st.header('Solving equation with genetic algorithm')
     st.subheader('Example: Target = 30, Generated Variables = 4   1a+2b+3c+4d=30')
-    pop_size = int(st.number_input('Enter The Population Size'))
-    max_iterations = int(st.number_input('Enter The Maximum Allowed Iterations'))
-    chromosome_gene_size = int(st.number_input('Enter The Number Of Generated Variables For The Equation'))
-    rate_of_survival = int(st.number_input('Enter The Number Of Survivals Per Population'))
-    target_number = st.number_input('Enter The Target Number For The Equation')
+    pop_size = int(st.slider('Enter The Population Size', 10, 200, 100))
+    max_iterations = int(st.slider('Enter The Maximum Allowed Iterations', 1, 200, 100))
+    chromosome_gene_size = int(st.slider('Enter The Number Of Generated Variables For The Equation', 2, 6, 4))
+    rate_of_survival = int(st.slider('Enter The Number Of Survivals Per Population', int(pop_size/4), pop_size, int(pop_size/2)))
+    target_number = int(st.number_input('Enter The Target (int) Number For The Equation'))
     allow_mutation = st.checkbox('Allow Mutation')
     allow_mixes_in_top_chromosomes = st.checkbox('Allow Dilution Of Top Chromosomes')
     top_chromosome = None
